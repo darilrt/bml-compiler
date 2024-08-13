@@ -1,11 +1,11 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub lexeme: String,
     pub location: Location,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum TokenKind {
     Unknown,
     Eof,
