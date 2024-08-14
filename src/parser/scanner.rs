@@ -12,8 +12,14 @@ impl Scanner {
         Scanner { tokens, index: 0 }
     }
 
-    pub fn peek(&self) -> Option<&Token> {
-        self.tokens.get(self.index)
+    pub fn peek(&self) -> Option<Token> {
+        let token = self.tokens.get(self.index);
+
+        if token.is_none() {
+            return None;
+        }
+
+        Some(token.unwrap().clone())
     }
 
     pub fn advance(&mut self) {

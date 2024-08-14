@@ -28,7 +28,7 @@ impl Lexer {
         if self.index >= self.source.len() {
             return Token {
                 kind: TokenKind::Eof,
-                lexeme: String::new(),
+                lexeme: "Eof".to_owned(),
                 location: Location {
                     line: self.line,
                     column: self.column,
@@ -196,12 +196,25 @@ impl Lexer {
 
     pub fn lex_string(&mut self) -> Token {
         let start = self.peek();
+        let pos: Location = Location {
+            line: self.line,
+            column: self.column,
+            file: self.file_name.clone(),
+        };
         self.advance();
 
         let mut lexeme = String::new();
         let mut escape = false;
 
         while self.peek() != start || escape {
+            if self.index >= self.source.len() {
+                println!(
+                    "In {}:{}:{}\n error: Unterminated string",
+                    pos.file, pos.line, pos.column
+                );
+                std::process::exit(1);
+            }
+
             let c = self.peek();
             self.advance();
 
@@ -224,16 +237,10 @@ impl Lexer {
 
         self.advance();
 
-        let len = lexeme.len();
-
         Token {
             kind: TokenKind::String,
             lexeme,
-            location: Location {
-                line: self.line,
-                column: self.column - len - 2,
-                file: self.file_name.clone(),
-            },
+            location: pos,
         }
     }
 

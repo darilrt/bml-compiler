@@ -5,13 +5,7 @@ pub enum Ast {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
-    Expr(Expr),
-    Export(Expr),
-    Empty,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Expr {
-    Number(f64),
+    Element(String, Vec<Stmt>),
     String(String),
+    Empty,
 }

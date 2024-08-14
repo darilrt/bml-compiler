@@ -1,1 +1,6 @@
-export "Hello, World!"
+<body> {
+    <b> {
+        "Hello"
+    }
+    ", World!"
+}
