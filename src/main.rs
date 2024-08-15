@@ -8,27 +8,26 @@ mod translator;
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
-    if args.len() < 1 {
-        println!("Usage: {} <source_file>", args[0]);
-        return;
-    }
-
     let mut print_ast = false;
     let mut print_ir = false;
 
-    for arg in args.iter().skip(2) {
+    // Rest of your code goes here
+    let mut file_name = "";
+
+    for arg in args.iter().skip(1) {
         match arg.as_str() {
             "--print-ast" => print_ast = true,
             "--print-ir" => print_ir = true,
-            _ => {
-                println!("Unknown option: {}", arg);
-                return;
+            s => {
+                file_name = s;
             }
         }
     }
 
-    // Rest of your code goes here
-    let file_name = &args[1];
+    if file_name == "" {
+        println!("No input file");
+        return;
+    }
 
     let ast = parse_file(file_name);
 
