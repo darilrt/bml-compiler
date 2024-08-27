@@ -26,6 +26,12 @@ pub fn parse_error(token: &Token, message: &str) {
     std::process::exit(1);
 }
 
+pub fn line_error(file_name: &str, line: usize, message: &str) {
+    eprintln!("In {}:{}\n error: {}", file_name, line, message);
+
+    std::process::exit(1);
+}
+
 pub struct Parser {
     scanner: RefCell<Scanner>,
 }
@@ -39,33 +45,62 @@ impl Parser {
         }
     }
 
+    /// Get the next token from the scanner
     pub fn peek(&mut self) -> Option<Token> {
         self.scanner.borrow_mut().peek()
     }
 
+    /// Advance the scanner to the next token
     pub fn advance(&mut self) {
         self.scanner.borrow_mut().advance();
     }
 
+    /// Check if the scanner is at the end of the source file
     pub fn is_at_end(&mut self) -> bool {
         self.scanner.borrow_mut().is_at_end()
     }
 
-    pub fn expect(&mut self, lexeme: &str) -> Stmt {
+    /// Check if the next token is the expected lexeme
+    /// If it is, advance the scanner and return true
+    /// Otherwise, return false and print an error message
+    /// The error message will be printed by the parse_error function
+    /// The parse_error function will also exit the program
+    pub fn expect(&mut self, lexeme: &str) -> bool {
         let token = self.peek();
 
         if token.is_none() {
-            return Stmt::Empty;
+            return false;
         }
 
         let token = token.unwrap();
 
         if token.lexeme == lexeme {
             self.advance();
-            Stmt::Empty
+            return true;
         } else {
             parse_error(&token, &format!("Expected '{}'", lexeme));
-            Stmt::Empty
+            return false;
+        }
+    }
+
+    /// Check if the next token is the expected lexeme
+    /// If it is, advance the scanner and return true
+    /// Otherwise, return false
+    /// This function does not print an error message
+    pub fn match_token(&mut self, lexeme: &str) -> bool {
+        let token = self.peek();
+
+        if token.is_none() {
+            return false;
+        }
+
+        let token = token.unwrap();
+
+        if token.lexeme == lexeme {
+            self.advance();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -90,14 +125,32 @@ impl Parser {
 
         let token = token.unwrap();
 
-        if token.lexeme == "<" {
-            return self.parse_component();
-        }
-
         match token.kind {
-            TokenKind::String => {
+            TokenKind::Identifier => {
                 self.advance();
-                Stmt::String(token.lexeme)
+
+                if self.match_token(":") {
+                    let name = token.lexeme.clone();
+
+                    let kw = self.peek();
+
+                    if kw.is_none() {
+                        parse_error(
+                            &token,
+                            format!("Expected keyword after '{}:'", name).as_str(),
+                        );
+                        return Stmt::Empty;
+                    }
+
+                    let kw = kw.unwrap();
+
+                    match kw.kind {
+                        TokenKind::Keyword => self.parse_decl(name),
+                        _ => Stmt::Empty,
+                    }
+                } else {
+                    return Stmt::Empty;
+                }
             }
             TokenKind::Eof => {
                 self.advance();
@@ -113,20 +166,7 @@ impl Parser {
         }
     }
 
-    pub fn parse_component(&mut self) -> Stmt {
-        self.expect("<");
-
-        let token = self.peek().expect("Expected a component name");
-        let name = token.lexeme.clone();
-
-        if token.kind != TokenKind::Identifier {
-            parse_error(&token, "Expected an identifier");
-        }
-
-        self.advance();
-
-        self.expect(">");
-
+    fn parse_decl(&mut self, name: String) -> Stmt {
         let token = self.peek();
 
         if token.is_none() {
@@ -134,47 +174,17 @@ impl Parser {
         }
 
         let token = token.unwrap();
-        let children: Vec<Stmt>;
 
-        if token.lexeme == "{" {
-            self.advance();
-
-            children = self.parse_children();
-
-            self.expect("}");
-
-            return Stmt::Element(name, children);
-        } else {
-            parse_error(&token, "Expected a '{'");
-            Stmt::Empty
+        match token.lexeme.as_str() {
+            "fn" => Stmt::DeclFunc(name),
+            _ => {
+                line_error(
+                    &token.location.file,
+                    token.location.line,
+                    format!("Unexpected keyword '{}'", token.lexeme).as_str(),
+                );
+                Stmt::Empty
+            }
         }
-    }
-
-    pub fn parse_children(&mut self) -> Vec<Stmt> {
-        let mut children = vec![];
-
-        loop {
-            let token = self.peek();
-
-            if token.is_none() {
-                break;
-            }
-
-            let token = token.unwrap();
-
-            if token.lexeme == "}" {
-                break;
-            }
-
-            let stmt = self.parse_stmt();
-
-            if stmt == Stmt::Empty {
-                break;
-            }
-
-            children.push(stmt);
-        }
-
-        children
     }
 }

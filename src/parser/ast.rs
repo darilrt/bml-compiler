@@ -5,7 +5,9 @@ pub enum Ast {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
-    Element(String, Vec<Stmt>),
-    String(String),
     Empty,
+
+    // Declaration Statements
+    DeclFunc(String),
+    // Expression Statements
 }

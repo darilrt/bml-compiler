@@ -54,21 +54,15 @@ impl SemanticalAnalizer {
 
     pub fn analize_stmt(&self, stmt: &Stmt) -> AnalizeResult {
         match stmt {
-            Stmt::Element(tag, children) => self.analize_element(tag, children),
-            Stmt::String(s) => (IR::String(s.clone()), self.none()),
+            Stmt::DeclFunc(s) => self.analize_function_decl(s),
             _ => (IR::Empty, self.none()),
         }
     }
 
-    pub fn analize_element(&self, tag: &String, children: &Vec<Stmt>) -> AnalizeResult {
-        let mut ir = vec![];
+    pub fn analize_function_decl(&self, name: &String) -> AnalizeResult {
+        // let mut m = self.module.lock().unwrap();
+        // m.add_function(name.clone());
 
-        for stmt in children {
-            let (stmt_ir, _) = self.analize_stmt(stmt);
-            ir.push(Box::new(stmt_ir));
-        }
-
-        let ir = IR::Element(tag.clone(), ir);
-        (ir, self.none())
+        (IR::DeclFunc(name.clone()), self.none())
     }
 }

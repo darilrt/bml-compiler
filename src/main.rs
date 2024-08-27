@@ -1,6 +1,7 @@
-use ir::{ir::IR, semantical_analizer::SemanticalAnalizer};
+use ir::semantical_analizer::SemanticalAnalizer;
 use parser::parser::parse_file;
-use translator::ir_to_html;
+use translator::ir_to_c;
+
 mod ir;
 mod parser;
 mod translator;
@@ -42,7 +43,7 @@ fn main() {
         println!("{:#?}", ir.0);
     }
 
-    let mut translator = ir_to_html::TranslatorHTML {
+    let mut translator = ir_to_c::TranslatorC {
         output: String::new(),
     };
     let html = translator.translate(&ir.0);

@@ -1,22 +1,10 @@
-use Boostrapt as b
 
-<body> {
+<html> {
     <head> {
-        title { "Hello, World!" }
+        <title> { "Hello, World!" }
     }
     <body> {
-        <input#filter>
-
-        <div> {
-            [ "Hello", ", World!" ]
-        }
-
-        on(#filter.onchange) {
-            div {
-                get("info").map (n) {
-                    span { n }
-                }
-            }
-        }
+        <b> { "Hello" }
     }
 }
+

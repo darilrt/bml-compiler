@@ -52,6 +52,10 @@ impl Lexer {
     }
 
     pub fn advance(&mut self) {
+        if self.peek() == '\n' {
+            self.line += 1;
+            self.column = 1;
+        }
         self.index += 1;
         self.column += 1;
     }
